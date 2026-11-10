@@ -1,0 +1,22 @@
+name: Feedback or idea
+description: Share what worked, what felt confusing or what you would change.
+title: "[Feedback]: "
+body:
+  - type: textarea
+    id: experience
+    attributes:
+      label: What did you try?
+      description: Tell us what you wanted to do and what happened.
+    validations:
+      required: true
+  - type: textarea
+    id: improvement
+    attributes:
+      label: What would make it better?
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else?
+      description: Screenshots and environment details help. Remove private information first.

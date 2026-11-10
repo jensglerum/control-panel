@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "note": "Readable fixed-source manifest. Executable definitions/network policy live in radarlib.py; editing this file does not expand collector access.",
+  "sources": [
+    {
+      "id": "openai-news",
+      "name": "OpenAI news",
+      "kind": "feed",
+      "url": "https://openai.com/news/rss.xml",
+      "topics": ["models", "agents", "company"],
+      "limitation": "Official news RSS; metadata/excerpts, not all product documentation.",
+      "enabled": true
+    },
+    {
+      "id": "anthropic-news",
+      "name": "Anthropic news",
+      "kind": "anthropic",
+      "url": "https://www.anthropic.com/news",
+      "topics": ["models", "agents", "company"],
+      "limitation": "News index plus section sitemap; bounded lookback, article metadata/excerpts.",
+      "enabled": true
+    },
+    {
+      "id": "anthropic-engineering",
+      "name": "Anthropic engineering",
+      "kind": "anthropic",
+      "url": "https://www.anthropic.com/engineering",
+      "topics": ["agents", "developer-tools"],
+      "limitation": "Engineering index membership retained across /research/ canonical URLs; bounded sitemap reconciliation.",
+      "enabled": true
+    },
+    {
+      "id": "anthropic-research",
+      "name": "Anthropic research",
+      "kind": "anthropic",
+      "url": "https://www.anthropic.com/research",
+      "topics": ["research", "models", "safety"],
+      "limitation": "Research index plus section sitemap; includes some engineering articles.",
+      "enabled": true
+    },
+    {
+      "id": "google-ai",
+      "name": "Google AI blog",
+      "kind": "feed",
+      "url": "https://blog.google/innovation-and-ai/technology/ai/rss/",
+      "topics": ["models", "research", "tools"],
+      "limitation": "One Google AI blog category, not every Google/DeepMind publication.",
+      "enabled": true
+    },
+    {
+      "id": "huggingface-blog",
+      "name": "Hugging Face blog",
+      "kind": "feed",
+      "url": "https://huggingface.co/blog/feed.xml",
+      "topics": ["open-source", "models", "research"],
+      "limitation": "Hugging Face hosted posts; authors may be staff, partners or community.",
+      "enabled": true
+    },
+    {
+      "id": "github-t3code",
+      "name": "pingdotgg/t3code releases",
+      "kind": "feed",
+      "url": "https://github.com/pingdotgg/t3code/releases.atom",
+      "topics": ["agents", "developer-tools", "releases"],
+      "limitation": "Latest release Atom window; prereleases/nightlies labeled, not full release history.",
+      "enabled": true
+    },
+    {
+      "id": "github-codex",
+      "name": "openai/codex releases",
+      "kind": "feed",
+      "url": "https://github.com/openai/codex/releases.atom",
+      "topics": ["agents", "developer-tools", "releases"],
+      "limitation": "Latest release Atom window; prereleases/nightlies labeled, not full release history.",
+      "enabled": true
+    },
+    {
+      "id": "github-claude-code",
+      "name": "anthropics/claude-code releases",
+      "kind": "feed",
+      "url": "https://github.com/anthropics/claude-code/releases.atom",
+      "topics": ["agents", "developer-tools", "releases"],
+      "limitation": "Latest release Atom window; prereleases/nightlies labeled, not full release history.",
+      "enabled": true
+    },
+    {
+      "id": "x-indexed-discovery",
+      "name": "X indexed discovery leads",
+      "kind": "indexed_social_lead",
+      "url": "https://news.google.com/rss/search?q=site%3Ax.com+%22OpenAI%22+when%3A7d&hl=en-US&gl=US&ceid=US%3Aen",
+      "topics": ["discovery", "indexed-social"],
+      "limitation": "Google News search snippets for one fixed X/OpenAI query. Index dates and wrapper links; original author/post/content/media unverified. No complete social coverage.",
+      "enabled": true
+    },
+    {
+      "id": "linkedin-indexed-discovery",
+      "name": "LinkedIn indexed discovery leads",
+      "kind": "indexed_social_lead",
+      "url": "https://news.google.com/rss/search?q=site%3Alinkedin.com%2Fposts+%22AI+agents%22+when%3A7d&hl=en-US&gl=US&ceid=US%3Aen",
+      "topics": ["discovery", "indexed-social"],
+      "limitation": "Google News snippets for one fixed LinkedIn/AI-agents query. Index dates and wrapper links; original author/post/content/media unverified. No complete social coverage.",
+      "enabled": true
+    },
+    {
+      "id": "arxiv-cs-ai",
+      "name": "arXiv cs.AI",
+      "kind": "feed",
+      "url": "https://rss.arxiv.org/rss/cs.AI",
+      "topics": ["research"],
+      "limitation": "Daily cs.AI feed only; preprints are not independently verified results.",
+      "enabled": false
+    },
+    {
+      "id": "x-public",
+      "name": "X public sources",
+      "kind": "unconfigured",
+      "url": null,
+      "topics": ["discovery"],
+      "limitation": "Unconfigured: choose public author/query scope, access route and budget. No cookies or paid API calls.",
+      "enabled": false
+    },
+    {
+      "id": "linkedin-public",
+      "name": "LinkedIn public sources",
+      "kind": "unconfigured",
+      "url": null,
+      "topics": ["discovery"],
+      "limitation": "Unconfigured: broad public-post access is not supplied by connected people search. No scraper runs or private feed access.",
+      "enabled": false
+    },
+    {
+      "id": "manual-links",
+      "name": "Manually saved public links",
+      "kind": "manual",
+      "url": null,
+      "topics": ["discovery"],
+      "limitation": "Only explicitly supported public domains; social links are stored as uninspected links, not fetched.",
+      "enabled": false
+    }
+  ]
+}
