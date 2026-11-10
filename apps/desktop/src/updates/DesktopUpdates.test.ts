@@ -23,6 +23,33 @@ import * as DesktopUpdates from "./DesktopUpdates.ts";
 import { flushCallbacks, makeHarness } from "./updatesTestHarness.ts";
 
 describe("DesktopUpdates", () => {
+  it.effect("leaves a packaged preview without a feed unable to check, download or install", () => {
+    const harness = makeHarness({
+      appVersion: "0.1.0-preview.20261111.1",
+      env: { T3CODE_DESKTOP_MOCK_UPDATES: "false" },
+    });
+
+    return Effect.scoped(
+      Effect.gen(function* () {
+        const updates = yield* DesktopUpdates.DesktopUpdates;
+        yield* updates.configure;
+        const state = yield* updates.getState;
+        assert.equal(state.status, "disabled");
+        assert.isFalse(state.enabled);
+        assert.equal(
+          state.message,
+          "Automatic updates are not available because no update feed is configured.",
+        );
+        assert.isFalse((yield* updates.check("manual")).checked);
+        assert.isFalse((yield* updates.download).accepted);
+        assert.isFalse((yield* updates.install).accepted);
+        assert.equal(harness.checkCount(), 0);
+        assert.equal(harness.downloadCount(), 0);
+        assert.equal(harness.quitAndInstalls(), 0);
+      }),
+    ).pipe(Effect.provide(harness.layer));
+  });
+
   it.effect("updates Linux .deb installs and leaves other non-AppImage installs off", () =>
     Effect.gen(function* () {
       const linuxState = (packageType: string | undefined) =>

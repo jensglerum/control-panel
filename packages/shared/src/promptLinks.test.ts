@@ -116,13 +116,15 @@ describe("link round trips", () => {
     const path = promptLinkAppPath(link);
     expect(path).toBe("/env-1/mcp%3A1");
     const deepLink = promptLinkDeepLink(path!);
-    expect(deepLink).toBe("t3code://threads/env-1/mcp%3A1");
+    expect(deepLink).toBe("controlpanel://threads/env-1/mcp%3A1");
     expect(promptLinkAppPath(deepLink)).toBe(path);
   });
 
   it("maps app scheme and hosted links to in-app paths, and nothing else", () => {
-    expect(promptLinkAppPath("t3code://new?prompt=hi")).toBe("/new?prompt=hi");
-    expect(promptLinkAppPath("t3code-dev://threads/env-1/thread-1")).toBe("/env-1/thread-1");
+    expect(promptLinkAppPath("t3code://new?prompt=hi")).toBeNull();
+    expect(promptLinkAppPath("t3code-dev://threads/env-1/thread-1")).toBeNull();
+    expect(promptLinkAppPath("controlpanel://new?prompt=hi")).toBe("/new?prompt=hi");
+    expect(promptLinkAppPath("controlpanel-dev://threads/env-1/thread-1")).toBe("/env-1/thread-1");
     expect(promptLinkAppPath("https://app.t3.codes/env-1/thread-1?prompt=go")).toBe(
       "/env-1/thread-1?prompt=go",
     );
@@ -137,6 +139,6 @@ describe("link round trips", () => {
     expect(promptLinkAppPath("https://app.t3.codes/threads/env-1")).toBeNull();
     expect(promptLinkAppPath("https://app.t3.codes/settings/general")).toBeNull();
     expect(promptLinkAppPath("https://evil.test/new?prompt=hi")).toBeNull();
-    expect(promptLinkAppPath("t3code://app/index.html")).toBeNull();
+    expect(promptLinkAppPath("controlpanel://app/index.html")).toBeNull();
   });
 });

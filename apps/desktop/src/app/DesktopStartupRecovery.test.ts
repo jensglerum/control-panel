@@ -98,116 +98,132 @@ describe("resolveStartupRecoveryOffer", () => {
 });
 
 it.effect.each([
-  { visible: false, started: false, closeMain: false },
-  { visible: true, started: false, closeMain: false },
-  { visible: true, started: true, closeMain: false },
-  { visible: true, started: false, closeMain: true },
-])("closes recovery safely with closeMain=$closeMain", ({ visible, started, closeMain }) =>
-  Effect.scoped(
-    Effect.gen(function* () {
-      const checked = yield* Deferred.make<void>();
-      const remembered = yield* Deferred.make<void>();
-      const shouldRecover = !visible || !started;
-      const closed = Promise.withResolvers<void>();
-      const loaded: string[] = [];
-      const appListeners = new Map<string, (...args: readonly unknown[]) => void>();
-      const mainListeners = new Map<string, () => void>();
-      let closeCount = 0;
-      let mainVisible = visible;
-      const main = {
-        isDestroyed: () => false,
-        isVisible: () => mainVisible,
-        on: (event: string, listener: () => void) => mainListeners.set(event, listener),
-        once: (event: string, listener: () => void) => mainListeners.set(event, listener),
-      } as unknown as Electron.BrowserWindow;
-      const mainRef = yield* Ref.make(Option.some(main));
-      const recovery = {
-        isDestroyed: () => false,
-        close: () => {
-          closeCount++;
-          closed.resolve();
-        },
-        loadURL: (url: string) => {
-          loaded.push(url);
-          return Promise.resolve();
-        },
-        once: () => {},
-        webContents: { setWindowOpenHandler: () => {}, on: () => {} },
-      } as unknown as Electron.BrowserWindow;
-      const state = yield* DesktopState.DesktopState;
-      if (started) yield* SubscriptionRef.set(state.primaryBackendStartup, { _tag: "Ready" });
-      yield* listen.pipe(
-        Effect.provide(
-          Layer.mergeAll(
-            FileSystem.layerNoop({
-              readFileString: () => Effect.succeed("0.1.2"),
-              writeFileString: () => Deferred.succeed(remembered, undefined).pipe(Effect.asVoid),
-            }),
-            Layer.succeed(DesktopEnvironment.DesktopEnvironment, {
-              appVersion: "0.1.3",
-              stateDir: "/task/state",
-              logDir: "/task/logs",
-              path: { join: (...parts: string[]) => parts.join("/") },
-            } as unknown as DesktopEnvironment.DesktopEnvironment["Service"]),
-            Layer.succeed(ElectronApp.ElectronApp, {
-              on: (event: string, listener: (...args: readonly unknown[]) => void) =>
-                Effect.sync(() => {
-                  appListeners.set(event, listener);
-                }),
-            } as unknown as ElectronApp.ElectronApp["Service"]),
-            Layer.succeed(
-              ElectronShell.ElectronShell,
-              {} as ElectronShell.ElectronShell["Service"],
-            ),
-            Layer.succeed(ElectronTheme.ElectronTheme, {
-              shouldUseDarkColors: Effect.succeed(false),
-            } as ElectronTheme.ElectronTheme["Service"]),
-            Layer.succeed(ElectronWindow.ElectronWindow, {
-              main: Ref.get(mainRef),
-              create: () => Effect.succeed(recovery),
-            } as unknown as ElectronWindow.ElectronWindow["Service"]),
-            Layer.succeed(DesktopUpdates.DesktopUpdates, {
-              subscribe: Effect.succeed({
-                latest: updateState({ status: "disabled" }),
-                changes: Stream.empty,
+  { visible: false, started: false, closeMain: false, lastStartedVersion: "0.1.2" },
+  { visible: true, started: false, closeMain: false, lastStartedVersion: "0.1.2" },
+  { visible: true, started: true, closeMain: false, lastStartedVersion: "0.1.2" },
+  { visible: true, started: false, closeMain: true, lastStartedVersion: "0.1.2" },
+  { visible: true, started: false, closeMain: false, lastStartedVersion: "0.1.3" },
+])(
+  "closes recovery safely with closeMain=$closeMain",
+  ({ visible, started, closeMain, lastStartedVersion }) =>
+    Effect.scoped(
+      Effect.gen(function* () {
+        const checked = yield* Deferred.make<void>();
+        const remembered = yield* Deferred.make<void>();
+        const opened = yield* Deferred.make<string>();
+        const shouldRecover = !visible || !started;
+        const closed = Promise.withResolvers<void>();
+        const loaded: string[] = [];
+        const appListeners = new Map<string, (...args: readonly unknown[]) => void>();
+        const mainListeners = new Map<string, () => void>();
+        const recoveryListeners = new Map<string, (...args: readonly unknown[]) => void>();
+        let closeCount = 0;
+        let mainVisible = visible;
+        const main = {
+          isDestroyed: () => false,
+          isVisible: () => mainVisible,
+          on: (event: string, listener: () => void) => mainListeners.set(event, listener),
+          once: (event: string, listener: () => void) => mainListeners.set(event, listener),
+        } as unknown as Electron.BrowserWindow;
+        const mainRef = yield* Ref.make(Option.some(main));
+        const recovery = {
+          isDestroyed: () => false,
+          close: () => {
+            closeCount++;
+            closed.resolve();
+          },
+          loadURL: (url: string) => {
+            loaded.push(url);
+            return Promise.resolve();
+          },
+          once: () => {},
+          webContents: {
+            setWindowOpenHandler: () => {},
+            on: (event: string, listener: (...args: readonly unknown[]) => void) =>
+              recoveryListeners.set(event, listener),
+          },
+        } as unknown as Electron.BrowserWindow;
+        const state = yield* DesktopState.DesktopState;
+        if (started) yield* SubscriptionRef.set(state.primaryBackendStartup, { _tag: "Ready" });
+        yield* listen.pipe(
+          Effect.provide(
+            Layer.mergeAll(
+              FileSystem.layerNoop({
+                readFileString: () => Effect.succeed(lastStartedVersion),
+                writeFileString: () => Deferred.succeed(remembered, undefined).pipe(Effect.asVoid),
               }),
-              check: () => Deferred.succeed(checked, undefined),
-            } as unknown as DesktopUpdates.DesktopUpdates["Service"]),
+              Layer.succeed(DesktopEnvironment.DesktopEnvironment, {
+                appVersion: "0.1.3",
+                stateDir: "/task/state",
+                logDir: "/task/logs",
+                path: { join: (...parts: string[]) => parts.join("/") },
+              } as unknown as DesktopEnvironment.DesktopEnvironment["Service"]),
+              Layer.succeed(ElectronApp.ElectronApp, {
+                on: (event: string, listener: (...args: readonly unknown[]) => void) =>
+                  Effect.sync(() => {
+                    appListeners.set(event, listener);
+                  }),
+              } as unknown as ElectronApp.ElectronApp["Service"]),
+              Layer.succeed(ElectronShell.ElectronShell, {
+                openExternal: (url: string) => Deferred.succeed(opened, url).pipe(Effect.asVoid),
+              } as ElectronShell.ElectronShell["Service"]),
+              Layer.succeed(ElectronTheme.ElectronTheme, {
+                shouldUseDarkColors: Effect.succeed(false),
+              } as ElectronTheme.ElectronTheme["Service"]),
+              Layer.succeed(ElectronWindow.ElectronWindow, {
+                main: Ref.get(mainRef),
+                create: () => Effect.succeed(recovery),
+              } as unknown as ElectronWindow.ElectronWindow["Service"]),
+              Layer.succeed(DesktopUpdates.DesktopUpdates, {
+                subscribe: Effect.succeed({
+                  latest: updateState({ status: "disabled" }),
+                  changes: Stream.empty,
+                }),
+                check: () => Deferred.succeed(checked, undefined),
+              } as unknown as DesktopUpdates.DesktopUpdates["Service"]),
+            ),
           ),
-        ),
-      );
-      appListeners.get("browser-window-created")?.({}, main);
-      if (started) yield* Deferred.await(remembered);
-      yield* SubscriptionRef.set(state.primaryBackendStartup, {
-        _tag: "Failing",
-        reason: "Server failed before readiness",
-        managedPolicy: false,
-        output: "Failure details",
-      });
-      yield* Deferred.await(checked);
-      expect(loaded.length).toBe(shouldRecover ? 1 : 0);
-      if (shouldRecover) {
-        expect(decodeURIComponent(loaded[0]!)).toContain("Failure details");
-        if (closeMain) yield* Ref.set(mainRef, Option.none());
-        yield* SubscriptionRef.set(state.primaryBackendStartup, { _tag: "Ready" });
-        yield* Deferred.await(remembered);
-        if (closeMain || !visible) {
-          expect(closeCount).toBe(0);
-          if (closeMain) {
-            yield* Ref.set(mainRef, Option.some(main));
-            mainVisible = false;
-            appListeners.get("browser-window-created")?.({}, main);
+        );
+        appListeners.get("browser-window-created")?.({}, main);
+        if (started) yield* Deferred.await(remembered);
+        yield* SubscriptionRef.set(state.primaryBackendStartup, {
+          _tag: "Failing",
+          reason: "Server failed before readiness",
+          managedPolicy: false,
+          output: "Failure details",
+        });
+        yield* Deferred.await(checked);
+        expect(loaded.length).toBe(shouldRecover ? 1 : 0);
+        if (shouldRecover) {
+          expect(decodeURIComponent(loaded[0]!)).toContain("Failure details");
+          const reinstall = lastStartedVersion !== "0.1.3";
+          recoveryListeners.get("will-navigate")?.(
+            { preventDefault: () => {} },
+            `https://startup-recovery.invalid/${reinstall ? "reinstall" : "releases"}`,
+          );
+          expect(yield* Deferred.await(opened)).toBe(
+            `https://github.com/jensglerum/control-panel/releases${reinstall ? `/tag/v${lastStartedVersion}` : ""}`,
+          );
+          if (closeMain) yield* Ref.set(mainRef, Option.none());
+          yield* SubscriptionRef.set(state.primaryBackendStartup, { _tag: "Ready" });
+          if (lastStartedVersion !== "0.1.3") yield* Deferred.await(remembered);
+          if (closeMain || !visible) {
+            expect(closeCount).toBe(0);
+            if (closeMain) {
+              yield* Ref.set(mainRef, Option.some(main));
+              mainVisible = false;
+              appListeners.get("browser-window-created")?.({}, main);
+            }
+            mainListeners.get("ready-to-show")?.();
+            expect(closeCount).toBe(0);
+            mainVisible = true;
+            const show = mainListeners.get("show");
+            expect(show).toBeDefined();
+            show!();
           }
-          mainListeners.get("ready-to-show")?.();
-          expect(closeCount).toBe(0);
-          mainVisible = true;
-          const show = mainListeners.get("show");
-          expect(show).toBeDefined();
-          show!();
+          yield* Effect.promise(() => closed.promise);
+          expect(closeCount).toBe(1);
         }
-        yield* Effect.promise(() => closed.promise);
-        expect(closeCount).toBe(1);
-      }
-    }),
-  ).pipe(Effect.provide(DesktopState.layer)),
+      }),
+    ).pipe(Effect.provide(DesktopState.layer)),
 );

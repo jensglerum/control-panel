@@ -15,7 +15,7 @@ export function newClaudeAccountProfile(input: {
     enabled: true,
     config: {
       enabled: true,
-      homePath: `~/.t3/account-profiles/${input.instanceId}`,
+      homePath: `~/.control-panel/account-profiles/${input.instanceId}`,
       authMode: "subscription",
       ...(input.binaryPath?.trim() ? { binaryPath: input.binaryPath.trim() } : {}),
     },

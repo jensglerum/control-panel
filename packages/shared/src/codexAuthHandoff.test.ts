@@ -32,6 +32,15 @@ const callbackUrl = `http://127.0.0.1:54213/auth/callback?state=${"a".repeat(43)
 
 describe("Codex desktop handoff", () => {
   it("keeps the hosted return route, account, and environment with the code in a fragment", () => {
+    expect(new URL(codexAuthHandoffUrl(input)).protocol).toBe("controlpanel:");
+    const desktopInput = {
+      ...input,
+      returnUrl: "controlpanel://app/settings/providers?instanceId=work-codex",
+    };
+    expect(readCodexAuthHandoff(codexAuthHandoffUrl(desktopInput), false)).toEqual(desktopInput);
+    expect(readCodexAuthDelivery(codexAuthDeliveryUrl(desktopInput, callbackUrl))?.returnUrl).toBe(
+      desktopInput.returnUrl,
+    );
     expect(readCodexAuthHandoff(codexAuthHandoffUrl(input), false)).toEqual(input);
     const delivery = codexAuthDeliveryUrl(input, callbackUrl);
     expect(new URL(delivery).search).toBe("");
@@ -46,6 +55,7 @@ describe("Codex desktop handoff", () => {
   });
   it("rejects other handlers, schemes, arbitrary return sites, and non-OpenAI authorization", () => {
     const link = codexAuthHandoffUrl(input);
+    expect(readCodexAuthHandoff(link.replace("controlpanel:", "t3code:"), false)).toBeUndefined();
     expect(readCodexAuthHandoff(link, true)).toBeUndefined();
     expect(readCodexAuthHandoff(link.replace("auth/codex", "auth/other"), false)).toBeUndefined();
     expect(

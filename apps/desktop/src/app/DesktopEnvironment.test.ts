@@ -68,8 +68,11 @@ describe("DesktopEnvironment", () => {
       );
       const production = yield* makeEnvironment();
 
-      assert.equal(development.stateDir, "/Users/alice/.t3/dev");
-      assert.equal(production.stateDir, "/Users/alice/.t3/userdata");
+      assert.equal(development.stateDir, "/Users/alice/.control-panel/dev");
+      assert.equal(production.stateDir, "/Users/alice/.control-panel/userdata");
+      assert.equal(production.appUserModelId, "com.jensglerum.controlpanel");
+      const configured = yield* makeEnvironment({}, { T3CODE_HOME: "/isolated/control-panel" });
+      assert.equal(configured.stateDir, "/isolated/control-panel/userdata");
     }),
   );
 });

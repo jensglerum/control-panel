@@ -1,8 +1,29 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { cliArchiveTarCommand, newestCliReleaseVersion, parseChecksums } from "./cliRelease.ts";
+import {
+  CLI_RELEASES_PAGE_URL,
+  cliArchiveTarCommand,
+  cliReleaseAssetUrl,
+  cliReleaseDownloadBaseUrl,
+  cliReleaseIndexPageUrl,
+  newestCliReleaseVersion,
+  parseChecksums,
+} from "./cliRelease.ts";
 
 describe("cliRelease", () => {
+  it("keeps release discovery and downloads in the Control Panel repository", () => {
+    expect(CLI_RELEASES_PAGE_URL).toBe("https://github.com/jensglerum/control-panel/releases");
+    expect(cliReleaseIndexPageUrl(2)).toBe(
+      "https://api.github.com/repos/jensglerum/control-panel/releases?per_page=100&page=2",
+    );
+    expect(cliReleaseDownloadBaseUrl("0.1.0")).toBe(
+      "https://github.com/jensglerum/control-panel/releases/download/v0.1.0",
+    );
+    expect(cliReleaseAssetUrl("0.1.0", "SHA256SUMS")).toBe(
+      "https://github.com/jensglerum/control-panel/releases/download/v0.1.0/SHA256SUMS",
+    );
+  });
+
   it("parses sha256sum output including binary-mode markers", () => {
     const checksums = parseChecksums(
       [

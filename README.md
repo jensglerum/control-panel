@@ -17,7 +17,7 @@ Existing T3 capabilities remain in the codebase. Most fork-specific verification
 
 ## Try it from source
 
-There is no downloadable Control Panel Mac app yet. Installing the official T3 release installs upstream T3 without these changes.
+There is no signed public Control Panel Mac download yet. A local Apple Silicon preview can be built from source. Installing the official T3 release installs upstream T3 without these changes.
 
 For now, a developer can run the fork locally. Install [Vite+](https://viteplus.dev/guide/), Git and at least one supported agent such as [Codex CLI](https://developers.openai.com/codex/cli) or [Claude Code](https://code.claude.com/docs/en/setup). The repository pins its Node and package-manager versions.
 
@@ -42,11 +42,13 @@ Please keep feedback about this fork in this repository. [Contributing](CONTRIBU
 
 ## Desktop app
 
-T3 already includes an Electron app and macOS packaging. The next step is to give this fork its own app identity, data directory and update channel, then test a clean install before releasing a signed Mac beta. Research setup and missing-provider installation also need to work inside the app.
+The local Apple Silicon preview uses T3's Electron foundation with its own app identity, storage and command. Standalone launch and the Accounts page have been checked on the development Mac. Preview updates are disabled, and usage analytics are off by default.
+
+A signed public installer, clean-Mac provider installation and built-in research setup still need work. Existing browser accounts and history are not imported automatically.
 
 The [desktop distribution guide](docs/operations/control-panel-desktop.md) describes what can be reused and what remains. There is no release date promised.
 
-Inherited workflows depend on upstream services and runners. GitHub Actions will be disabled for the initial feedback repository until a fork-specific CI and release workflow is ready.
+Inherited workflows depend on upstream services and runners. GitHub Actions are disabled for the initial feedback repository until a fork-specific CI and release workflow is ready.
 
 ## Credit and license
 
