@@ -52,4 +52,4 @@ Inherited workflows depend on upstream services and runners. GitHub Actions will
 
 Control Panel is an independent fork of T3 Code, not an official T3 release. The core application, desktop infrastructure and most of this codebase come from the T3 team and contributors. The upstream [MIT license](LICENSE), source notices and [third-party license configuration](third-party-licenses.config.json) are retained.
 
-Provider and app names and logos belong to their respective owners. See the [app logo sources](apps/web/src/assets/apps/SOURCES.md). The bundled mountain wallpaper was supplied separately; its source and redistribution license still need to be confirmed before public publication.
+Provider and app names and logos belong to their respective owners. See the [app logo sources](apps/web/src/assets/apps/SOURCES.md). The maintainer has approved including the supplied mountain wallpaper in this repository.
